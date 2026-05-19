@@ -23,7 +23,7 @@ body{font-family:var(--vc-sans);font-weight:300;line-height:1.5;padding:24px 16p
 body.embed{padding:0;}
 body.embed .card{border:none;max-width:none;}
 .head{padding:22px 24px 20px;border-bottom:1px solid var(--vc-cloud);}
-.kicker{font-family:var(--vc-sans);font-weight:700;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--vc-charcoal);margin-bottom:8px;}
+.kicker{font-family:var(--vc-sans);font-weight:700;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--vc-orange);margin-bottom:8px;}
 .head h1{font-family:var(--vc-sans);font-weight:700;font-size:1.7rem;line-height:1.15;letter-spacing:-.005em;margin-bottom:8px;}
 .head .dek{font-size:.92rem;max-width:62ch;}
 .head .dek b{font-weight:700;}
@@ -100,53 +100,19 @@ if (new URLSearchParams(location.search).get('embed') === '1') {
   <section class="section">
     <div class="section-title">Union density over time</div>
     <div class="section-sub">Share of wage and salary workers who are union members</div>
+    <div class="yaxis-toolbar" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <span style="font-weight:700;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--vc-charcoal);">Y-axis</span>
+      <div class="btn-group" style="display:inline-flex;border:1px solid var(--vc-black);">
+        <button id="yax-natural" class="active" style="font-weight:700;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;background:var(--vc-black);color:var(--vc-white);padding:5px 11px;border:none;border-right:1px solid var(--vc-black);cursor:pointer;font-family:var(--vc-sans);">Natural range</button>
+        <button id="yax-zero" style="font-weight:700;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;background:var(--vc-white);color:var(--vc-black);padding:5px 11px;border:none;cursor:pointer;font-family:var(--vc-sans);">Start at zero</button>
+      </div>
+    </div>
     <div class="density-chart">
-      <svg viewBox="0 0 980 280" preserveAspectRatio="xMidYMid meet" aria-label="Union density line chart">
-        <!-- gridlines + ticks -->
-        <g stroke="#dddddd" stroke-width="1">
-          <line x1="60" y1="40"  x2="780" y2="40"/>
-          <line x1="60" y1="100" x2="780" y2="100"/>
-          <line x1="60" y1="160" x2="780" y2="160"/>
-          <line x1="60" y1="220" x2="780" y2="220"/>
-        </g>
-        <g font-family="halyard-text,sans-serif" font-size="11" fill="#707175" font-weight="700">
-          <text x="50" y="44" text-anchor="end">30%</text>
-          <text x="50" y="104" text-anchor="end">20%</text>
-          <text x="50" y="164" text-anchor="end">10%</text>
-          <text x="50" y="224" text-anchor="end">0%</text>
-        </g>
-        <!-- x ticks: 2004, 2014, 2019, 2024 -->
-        <g font-family="halyard-text,sans-serif" font-size="11" fill="#707175" font-weight="700" text-anchor="middle">
-          <text x="60" y="245">2004</text>
-          <text x="300" y="245">2014</text>
-          <text x="540" y="245">2019</text>
-          <text x="780" y="245">2024</text>
-        </g>
-        <!-- NYC overall: 25.2% (2004) -> 19.8% (2023-24). y = 220 - (val/30)*180 -->
-        <!-- 25.2% -> y=68.8 ; 19.8% -> y=101.2 -->
-        <polyline fill="none" stroke="#ff7c53" stroke-width="2.5"
-          points="60,68.8 540,90 780,101.2" />
-        <circle cx="60" cy="68.8" r="3.5" fill="#ff7c53"/>
-        <circle cx="780" cy="101.2" r="3.5" fill="#ff7c53"/>
-        <!-- NYC private only: 17.7% (2014-16) -> 13.5% (2024). y for 17.7=113.8, 13.5=139 -->
-        <polyline fill="none" stroke="#e7466d" stroke-width="2.5" stroke-dasharray="0"
-          points="300,113.8 780,139" />
-        <circle cx="300" cy="113.8" r="3.5" fill="#e7466d"/>
-        <circle cx="780" cy="139" r="3.5" fill="#e7466d"/>
-        <!-- US national: ~12% (2004) -> 10% (2024). y for 12 = 148, 10 = 160 -->
-        <polyline fill="none" stroke="#707175" stroke-width="2.5" stroke-dasharray="4 4"
-          points="60,148 780,160" />
-        <!-- labels -->
-        <g font-family="halyard-text,sans-serif" font-size="13" font-weight="700">
-          <text x="788" y="101.2" fill="#ff7c53">NYC, all workers</text>
-          <text x="788" y="142" fill="#e7466d">NYC, private sector</text>
-          <text x="788" y="163" fill="#707175">U.S. average</text>
-        </g>
-      </svg>
+      <svg id="density-svg" viewBox="0 0 980 280" preserveAspectRatio="xMidYMid meet" aria-label="Union density line chart"></svg>
     </div>
     <div class="legend">
-      <span class="legend-item"><span class="legend-swatch" style="background:#ff7c53"></span>NYC, all workers</span>
-      <span class="legend-item"><span class="legend-swatch" style="background:#e7466d"></span>NYC, private sector</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:#ff7c53"></span>New York City, all workers</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:#e7466d"></span>New York City, private sector</span>
       <span class="legend-item"><span class="legend-swatch" style="background:#707175"></span>U.S. average</span>
     </div>
   </section>
@@ -167,13 +133,81 @@ if (new URLSearchParams(location.search).get('embed') === '1') {
   <footer class="foot">
     <h3>Methodology</h3>
     <p><b>Source:</b> Joshua B. Freeman for Vital City, citing the Union Membership and Coverage Database (Hirsch &amp; Macpherson, unionstats.com), which compiles tabulations from the Current Population Survey. Union density figures are for New York City, 2004 and 2023–24; private-sector NYC figures are for 2014–16 and 2023–24. Wage premiums are for the New York metropolitan area, pooled 2019–21.</p>
-    <p><b>How to read this:</b> Density is the share of wage and salary workers who report belonging to a union. Wage premium is the percentage difference between union and non-union median hourly wages within the named industry — it does not control for occupation, experience, or education. The overall NYC premium is +3.2% (about 81 cents an hour), much smaller than the industry-specific premiums because the mix of union and non-union jobs differs across industries.</p>
+    <p><b>How to read this:</b> Density is the share of wage and salary workers who report belonging to a union. Wage premium is the percentage difference between union and non-union median hourly wages within the named industry — it does not control for occupation, experience or education. The overall NYC premium is +3.2% (about 81 cents an hour), much smaller than the industry-specific premiums because the mix of union and non-union jobs differs across industries.</p>
     <p><b>Limitations:</b> Within-industry premium estimates can swing with composition shifts and have wider confidence bands than the headline density figure.</p>
   </footer>
 
 </main>
 
 <script>
+// Density chart — natural range / zero baseline toggle
+const densitySeries = [
+  { name: "NYC, all workers",     color: "#ff7c53", dash: null,    points: [[2004,25.2],[2019,21.0],[2024,19.8]] },
+  { name: "NYC, private sector",  color: "#e7466d", dash: null,    points: [[2014,17.7],[2024,13.5]] },
+  { name: "U.S. average",         color: "#707175", dash: "4 4",   points: [[2004,12.0],[2024,10.0]] }
+];
+
+function renderDensity(mode) {
+  const svg = document.getElementById('density-svg');
+  const w = 980, h = 280;
+  const plot = { x0: 60, x1: 780, y0: 40, y1: 220 };
+  const xMin = 2004, xMax = 2024;
+  const yMin = mode === 'zero' ? 0 : 8;
+  const yMax = mode === 'zero' ? 30 : 28;
+  const ticksY = mode === 'zero' ? [0,10,20,30] : [10,15,20,25];
+
+  const px = yr => plot.x0 + ((yr - xMin)/(xMax - xMin)) * (plot.x1 - plot.x0);
+  const py = v  => plot.y1 - ((v - yMin)/(yMax - yMin)) * (plot.y1 - plot.y0);
+
+  let s = '';
+  // y gridlines + labels
+  s += '<g stroke="#dddddd" stroke-width="1">';
+  ticksY.forEach(t => { s += `<line x1="${plot.x0}" y1="${py(t)}" x2="${plot.x1}" y2="${py(t)}"/>`; });
+  s += '</g>';
+  s += '<g font-family="halyard-text,sans-serif" font-size="11" fill="#707175" font-weight="700">';
+  ticksY.forEach(t => { s += `<text x="50" y="${py(t)+4}" text-anchor="end">${t}%</text>`; });
+  s += '</g>';
+  // x ticks
+  s += '<g font-family="halyard-text,sans-serif" font-size="11" fill="#707175" font-weight="700" text-anchor="middle">';
+  [2004,2014,2019,2024].forEach(yr => { s += `<text x="${px(yr)}" y="245">${yr}</text>`; });
+  s += '</g>';
+  // series
+  densitySeries.forEach(ser => {
+    const pts = ser.points.map(p => `${px(p[0])},${py(p[1])}`).join(' ');
+    s += `<polyline fill="none" stroke="${ser.color}" stroke-width="2.5"${ser.dash?` stroke-dasharray="${ser.dash}"`:''} points="${pts}"/>`;
+    ser.points.forEach(p => { s += `<circle cx="${px(p[0])}" cy="${py(p[1])}" r="3.5" fill="${ser.color}"/>`; });
+  });
+  // labels at right of each line's last point
+  s += '<g font-family="halyard-text,sans-serif" font-size="13" font-weight="700">';
+  densitySeries.forEach(ser => {
+    const last = ser.points[ser.points.length-1];
+    s += `<text x="${plot.x1+8}" y="${py(last[1])+4}" fill="${ser.color}">${ser.name}</text>`;
+  });
+  s += '</g>';
+
+  svg.innerHTML = s;
+}
+
+document.getElementById('yax-natural').addEventListener('click', () => {
+  document.getElementById('yax-natural').classList.add('active');
+  document.getElementById('yax-zero').classList.remove('active');
+  document.getElementById('yax-natural').style.background = 'var(--vc-black)';
+  document.getElementById('yax-natural').style.color = 'var(--vc-white)';
+  document.getElementById('yax-zero').style.background = 'var(--vc-white)';
+  document.getElementById('yax-zero').style.color = 'var(--vc-black)';
+  renderDensity('natural');
+});
+document.getElementById('yax-zero').addEventListener('click', () => {
+  document.getElementById('yax-zero').classList.add('active');
+  document.getElementById('yax-natural').classList.remove('active');
+  document.getElementById('yax-zero').style.background = 'var(--vc-black)';
+  document.getElementById('yax-zero').style.color = 'var(--vc-white)';
+  document.getElementById('yax-natural').style.background = 'var(--vc-white)';
+  document.getElementById('yax-natural').style.color = 'var(--vc-black)';
+  renderDensity('zero');
+});
+renderDensity('natural');
+
 const bars = [
   { label: "Leisure & hospitality", value: 58 },
   { label: "Construction", value: 40 },
