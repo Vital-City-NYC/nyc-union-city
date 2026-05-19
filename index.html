@@ -36,12 +36,24 @@ body.embed .card{border:none;max-width:none;}
 .section-title{font-family:var(--vc-sans);font-weight:700;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--vc-charcoal);margin-bottom:14px;}
 .section-sub{font-size:.82rem;color:var(--vc-charcoal);margin:-6px 0 14px;}
 
-/* Density chart (Panel A) */
-.density-chart{position:relative;height:280px;margin:8px 0 4px;}
-.density-chart svg{width:100%;height:100%;display:block;}
-.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.78rem;margin-top:10px;}
-.legend-item{display:inline-flex;align-items:center;gap:6px;}
-.legend-swatch{width:14px;height:3px;display:inline-block;}
+/* Dumbbell chart (Panel A) */
+.dumbbell{display:flex;flex-direction:column;gap:14px;margin-top:6px;}
+.db-row{display:grid;grid-template-columns:200px 1fr;align-items:center;gap:18px;}
+.db-label{font-weight:700;font-size:.92rem;line-height:1.2;}
+.db-label .yrs{display:block;font-weight:300;font-size:.72rem;color:var(--vc-charcoal);margin-top:2px;letter-spacing:.04em;}
+.db-track{position:relative;height:58px;}
+.db-axis-line{position:absolute;left:0;right:60px;top:32px;height:1px;background:var(--vc-cloud);}
+.db-bar{position:absolute;top:30px;height:5px;background:var(--vc-charcoal-50,#b9b9ba);}
+.db-dot{position:absolute;top:22px;width:21px;height:21px;border-radius:50%;border:2px solid var(--vc-white);transform:translateX(-50%);box-sizing:border-box;}
+.db-dot.start{background:var(--vc-cloud);border-color:var(--vc-charcoal);}
+.db-val{position:absolute;font-family:var(--vc-serif);font-weight:300;font-size:1.05rem;color:var(--vc-black);}
+.db-val.start{top:2px;transform:translateX(-50%);color:var(--vc-charcoal);font-size:.92rem;}
+.db-val.end{top:44px;transform:translateX(-50%);font-weight:300;}
+.db-delta{position:absolute;right:0;top:30px;font-family:var(--vc-sans);font-weight:700;font-size:.8rem;color:var(--vc-magenta);}
+.db-axis-row{display:grid;grid-template-columns:200px 1fr;gap:18px;margin-top:-4px;}
+.db-axis-ticks{position:relative;height:18px;}
+.db-axis-tick{position:absolute;top:0;width:1px;height:6px;background:var(--vc-cloud);}
+.db-axis-lbl{position:absolute;top:8px;font-weight:700;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--vc-charcoal);transform:translateX(-50%);}
 
 /* Premium chart (Panel B) */
 .bars{display:flex;flex-direction:column;gap:10px;}
@@ -98,23 +110,9 @@ if (new URLSearchParams(location.search).get('embed') === '1') {
   </div>
 
   <section class="section">
-    <div class="section-title">Union density over time</div>
-    <div class="section-sub">Share of wage and salary workers who are union members</div>
-    <div class="yaxis-toolbar" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <span style="font-weight:700;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--vc-charcoal);">Y-axis</span>
-      <div class="btn-group" style="display:inline-flex;border:1px solid var(--vc-black);">
-        <button id="yax-natural" class="active" style="font-weight:700;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;background:var(--vc-black);color:var(--vc-white);padding:5px 11px;border:none;border-right:1px solid var(--vc-black);cursor:pointer;font-family:var(--vc-sans);">Natural range</button>
-        <button id="yax-zero" style="font-weight:700;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;background:var(--vc-white);color:var(--vc-black);padding:5px 11px;border:none;cursor:pointer;font-family:var(--vc-sans);">Start at zero</button>
-      </div>
-    </div>
-    <div class="density-chart">
-      <svg id="density-svg" viewBox="0 0 980 280" preserveAspectRatio="xMidYMid meet" aria-label="Union density line chart"></svg>
-    </div>
-    <div class="legend">
-      <span class="legend-item"><span class="legend-swatch" style="background:#ff7c53"></span>New York City, all workers</span>
-      <span class="legend-item"><span class="legend-swatch" style="background:#e7466d"></span>New York City, private sector</span>
-      <span class="legend-item"><span class="legend-swatch" style="background:#707175"></span>U.S. average</span>
-    </div>
+    <div class="section-title">Union density: then vs. now</div>
+    <div class="section-sub">Share of wage and salary workers who are union members. Each row shows the change from the earlier year to 2024.</div>
+    <div class="dumbbell" id="dumbbell"></div>
   </section>
 
   <section class="section">
@@ -140,73 +138,73 @@ if (new URLSearchParams(location.search).get('embed') === '1') {
 </main>
 
 <script>
-// Density chart — natural range / zero baseline toggle
-const densitySeries = [
-  { name: "NYC, all workers",     color: "#ff7c53", dash: null,    points: [[2004,25.2],[2019,21.0],[2024,19.8]] },
-  { name: "NYC, private sector",  color: "#e7466d", dash: null,    points: [[2014,17.7],[2024,13.5]] },
-  { name: "U.S. average",         color: "#707175", dash: "4 4",   points: [[2004,12.0],[2024,10.0]] }
+// Dumbbell chart — share who are union members, then vs. now
+const dumbbellRows = [
+  { label: "New York City, all workers",    startYr: 2004, startVal: 25.2, endVal: 19.8, color: "#e7466d" },
+  { label: "New York City, private sector", startYr: 2014, startVal: 17.7, endVal: 13.5, color: "#ff7c53" },
+  { label: "U.S. average",                  startYr: 2004, startVal: 12.0, endVal: 10.0, color: "#707175" }
 ];
 
-function renderDensity(mode) {
-  const svg = document.getElementById('density-svg');
-  const w = 980, h = 280;
-  const plot = { x0: 60, x1: 780, y0: 40, y1: 220 };
-  const xMin = 2004, xMax = 2024;
-  const yMin = mode === 'zero' ? 0 : 8;
-  const yMax = mode === 'zero' ? 30 : 28;
-  const ticksY = mode === 'zero' ? [0,10,20,30] : [10,15,20,25];
+const xMin = 0, xMax = 30;  // % scale, fixed for all rows
+const ticks = [0, 5, 10, 15, 20, 25, 30];
+const dbContainer = document.getElementById('dumbbell');
 
-  const px = yr => plot.x0 + ((yr - xMin)/(xMax - xMin)) * (plot.x1 - plot.x0);
-  const py = v  => plot.y1 - ((v - yMin)/(yMax - yMin)) * (plot.y1 - plot.y0);
+function pctX(v) { return ((v - xMin) / (xMax - xMin)) * 100; }
 
-  let s = '';
-  // y gridlines + labels
-  s += '<g stroke="#dddddd" stroke-width="1">';
-  ticksY.forEach(t => { s += `<line x1="${plot.x0}" y1="${py(t)}" x2="${plot.x1}" y2="${py(t)}"/>`; });
-  s += '</g>';
-  s += '<g font-family="halyard-text,sans-serif" font-size="11" fill="#707175" font-weight="700">';
-  ticksY.forEach(t => { s += `<text x="50" y="${py(t)+4}" text-anchor="end">${t}%</text>`; });
-  s += '</g>';
-  // x ticks
-  s += '<g font-family="halyard-text,sans-serif" font-size="11" fill="#707175" font-weight="700" text-anchor="middle">';
-  [2004,2014,2019,2024].forEach(yr => { s += `<text x="${px(yr)}" y="245">${yr}</text>`; });
-  s += '</g>';
-  // series
-  densitySeries.forEach(ser => {
-    const pts = ser.points.map(p => `${px(p[0])},${py(p[1])}`).join(' ');
-    s += `<polyline fill="none" stroke="${ser.color}" stroke-width="2.5"${ser.dash?` stroke-dasharray="${ser.dash}"`:''} points="${pts}"/>`;
-    ser.points.forEach(p => { s += `<circle cx="${px(p[0])}" cy="${py(p[1])}" r="3.5" fill="${ser.color}"/>`; });
-  });
-  // labels at right of each line's last point
-  s += '<g font-family="halyard-text,sans-serif" font-size="13" font-weight="700">';
-  densitySeries.forEach(ser => {
-    const last = ser.points[ser.points.length-1];
-    s += `<text x="${plot.x1+8}" y="${py(last[1])+4}" fill="${ser.color}">${ser.name}</text>`;
-  });
-  s += '</g>';
+dumbbellRows.forEach((r) => {
+  const delta = r.endVal - r.startVal;
+  const deltaSign = delta < 0 ? '−' : '+';
+  const deltaStr = deltaSign + Math.abs(delta).toFixed(1) + ' pts';
+  const startX = pctX(r.startVal);
+  const endX = pctX(r.endVal);
+  const barLeft = Math.min(startX, endX);
+  const barWidth = Math.abs(endX - startX);
 
-  svg.innerHTML = s;
-}
-
-document.getElementById('yax-natural').addEventListener('click', () => {
-  document.getElementById('yax-natural').classList.add('active');
-  document.getElementById('yax-zero').classList.remove('active');
-  document.getElementById('yax-natural').style.background = 'var(--vc-black)';
-  document.getElementById('yax-natural').style.color = 'var(--vc-white)';
-  document.getElementById('yax-zero').style.background = 'var(--vc-white)';
-  document.getElementById('yax-zero').style.color = 'var(--vc-black)';
-  renderDensity('natural');
+  const row = document.createElement('div');
+  row.className = 'db-row';
+  row.innerHTML = `
+    <div class="db-label">${r.label}<span class="yrs">${r.startYr} → 2024</span></div>
+    <div class="db-track">
+      <div class="db-axis-line"></div>
+      <div class="db-bar" style="left:calc(${barLeft} * (100% - 60px) / 100); width:calc(${barWidth} * (100% - 60px) / 100); background:${r.color};opacity:.35;"></div>
+      <div class="db-dot start" style="left:calc(${startX} * (100% - 60px) / 100);"></div>
+      <div class="db-dot end" style="left:calc(${endX} * (100% - 60px) / 100); background:${r.color};"></div>
+      <div class="db-val start" style="left:calc(${startX} * (100% - 60px) / 100);">${r.startVal}%</div>
+      <div class="db-val end" style="left:calc(${endX} * (100% - 60px) / 100);">${r.endVal}%</div>
+      <div class="db-delta" style="color:${r.color};">${deltaStr}</div>
+    </div>
+  `;
+  dbContainer.appendChild(row);
 });
-document.getElementById('yax-zero').addEventListener('click', () => {
-  document.getElementById('yax-zero').classList.add('active');
-  document.getElementById('yax-natural').classList.remove('active');
-  document.getElementById('yax-zero').style.background = 'var(--vc-black)';
-  document.getElementById('yax-zero').style.color = 'var(--vc-white)';
-  document.getElementById('yax-natural').style.background = 'var(--vc-white)';
-  document.getElementById('yax-natural').style.color = 'var(--vc-black)';
-  renderDensity('zero');
-});
-renderDensity('natural');
+
+// Single axis row at bottom
+const axisRow = document.createElement('div');
+axisRow.className = 'db-axis-row';
+axisRow.innerHTML = `
+  <div></div>
+  <div class="db-axis-ticks">
+    ${ticks.map(t => `
+      <div class="db-axis-tick" style="left:calc(${pctX(t)} * (100% - 60px) / 100);"></div>
+      <div class="db-axis-lbl" style="left:calc(${pctX(t)} * (100% - 60px) / 100);">${t}%</div>
+    `).join('')}
+  </div>
+`;
+dbContainer.appendChild(axisRow);
+
+// Legend swatches
+const legend = document.createElement('div');
+legend.style.cssText = 'display:flex;gap:18px;flex-wrap:wrap;font-size:.74rem;color:var(--vc-charcoal);margin-top:14px;padding-top:10px;border-top:1px solid var(--vc-cloud);';
+legend.innerHTML = `
+  <span style="display:inline-flex;align-items:center;gap:6px;">
+    <span style="width:14px;height:14px;border-radius:50%;background:var(--vc-cloud);border:2px solid var(--vc-charcoal);box-sizing:border-box;"></span>
+    Earlier year
+  </span>
+  <span style="display:inline-flex;align-items:center;gap:6px;">
+    <span style="width:14px;height:14px;border-radius:50%;background:#e7466d;"></span>
+    2024
+  </span>
+`;
+dbContainer.appendChild(legend);
 
 const bars = [
   { label: "Leisure & hospitality", value: 58 },
