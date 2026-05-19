@@ -67,7 +67,8 @@ body.embed .card{border:none;max-width:none;}
 
 .foot{padding:18px 24px 22px;background:var(--vc-paper);}
 .foot h3{font-family:var(--vc-sans);font-weight:700;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--vc-charcoal);margin-bottom:8px;}
-.foot p{font-size:.78rem;line-height:1.55;color:var(--vc-charcoal);max-width:72ch;margin-bottom:6px;}
+.foot a{color:var(--vc-black);text-decoration:underline;text-decoration-color:var(--vc-cloud);text-underline-offset:2px;}
+.foot p{font-size:.68rem;line-height:1.45;color:var(--vc-charcoal);max-width:72ch;margin-bottom:6px;}
 
 @media (max-width:640px){
   .stats{grid-template-columns:repeat(2,1fr);}
@@ -130,7 +131,7 @@ if (new URLSearchParams(location.search).get('embed') === '1') {
 
   <footer class="foot">
     <h3>Methodology</h3>
-    <p><b>Source:</b> Joshua B. Freeman for Vital City, citing the Union Membership and Coverage Database (Hirsch &amp; Macpherson, unionstats.com), which compiles tabulations from the Current Population Survey. Union density figures are for New York City, 2004 and 2023–24; private-sector NYC figures are for 2014–16 and 2023–24. Wage premiums are for the New York metropolitan area, pooled 2019–21.</p>
+    <p><b>Source:</b> <a href="https://unionstats.com/" target="_blank" rel="noopener">Union Membership and Coverage Database</a> (Hirsch &amp; Macpherson), which compiles tabulations from the U.S. Bureau of Labor Statistics' <a href="https://www.bls.gov/cps/" target="_blank" rel="noopener">Current Population Survey</a>. Union density figures are for New York City, 2004 and 2023–24; private-sector New York City figures are for 2014–16 and 2023–24. Wage premiums are for the New York metropolitan area, pooled 2019–21.</p>
     <p><b>How to read this:</b> Density is the share of wage and salary workers who report belonging to a union. Wage premium is the percentage difference between union and non-union median hourly wages within the named industry — it does not control for occupation, experience or education. The overall NYC premium is +3.2% (about 81 cents an hour), much smaller than the industry-specific premiums because the mix of union and non-union jobs differs across industries.</p>
     <p><b>Limitations:</b> Within-industry premium estimates can swing with composition shifts and have wider confidence bands than the headline density figure.</p>
   </footer>
