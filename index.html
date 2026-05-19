@@ -112,7 +112,7 @@ if (new URLSearchParams(location.search).get('embed') === '1') {
 
   <section class="section">
     <div class="section-title">Union density: then vs. now</div>
-    <div class="section-sub">Share of wage and salary workers who are union members. Each row shows the change from the earlier year to 2024.</div>
+    <div class="section-sub">Share of wage and salary workers who are union members. Freeman cites the 2004 New York City figure as "more than one out of four"; the chart shows it as &gt;25%.</div>
     <div class="dumbbell" id="dumbbell"></div>
   </section>
 
@@ -141,9 +141,8 @@ if (new URLSearchParams(location.search).get('embed') === '1') {
 <script>
 // Dumbbell chart — share who are union members, then vs. now
 const dumbbellRows = [
-  { label: "New York City, all workers",    startYr: 2004, startVal: 25.2, endVal: 19.8, color: "#e7466d" },
-  { label: "New York City, private sector", startYr: 2014, startVal: 17.7, endVal: 13.5, color: "#ff7c53" },
-  { label: "U.S. average",                  startYr: 2004, startVal: 12.0, endVal: 10.0, color: "#707175" }
+  { label: "New York City, all workers",    startYr: 2004, startVal: 25, endVal: 19.8, color: "#e7466d", startApprox: true },
+  { label: "New York City, private sector", startYr: 2014, startVal: 17.7, endVal: 13.5, color: "#ff7c53" }
 ];
 
 const xMin = 0, xMax = 30;  // % scale, fixed for all rows
@@ -155,7 +154,8 @@ function pctX(v) { return ((v - xMin) / (xMax - xMin)) * 100; }
 dumbbellRows.forEach((r) => {
   const delta = r.endVal - r.startVal;
   const deltaSign = delta < 0 ? '−' : '+';
-  const deltaStr = deltaSign + Math.abs(delta).toFixed(1) + ' pts';
+  const approxStr = r.startApprox ? '~' : '';
+  const deltaStr = deltaSign + approxStr + Math.abs(delta).toFixed(1) + ' pts';
   const startX = pctX(r.startVal);
   const endX = pctX(r.endVal);
   const barLeft = Math.min(startX, endX);
@@ -170,7 +170,7 @@ dumbbellRows.forEach((r) => {
       <div class="db-bar" style="left:calc(${barLeft} * (100% - 60px) / 100); width:calc(${barWidth} * (100% - 60px) / 100); background:${r.color};opacity:.35;"></div>
       <div class="db-dot start" style="left:calc(${startX} * (100% - 60px) / 100);"></div>
       <div class="db-dot end" style="left:calc(${endX} * (100% - 60px) / 100); background:${r.color};"></div>
-      <div class="db-val start" style="left:calc(${startX} * (100% - 60px) / 100);">${r.startVal}%</div>
+      <div class="db-val start" style="left:calc(${startX} * (100% - 60px) / 100);">${r.startApprox ? '&gt;' : ''}${r.startVal}%</div>
       <div class="db-val end" style="left:calc(${endX} * (100% - 60px) / 100);">${r.endVal}%</div>
       <div class="db-delta" style="color:${r.color};">${deltaStr}</div>
     </div>
